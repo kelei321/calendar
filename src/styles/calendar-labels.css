@@ -1,0 +1,332 @@
+﻿.month-view {
+  touch-action: pan-x;
+  user-select: none;
+}
+
+.swipe-vertical {
+  touch-action: pan-x;
+}
+
+.swipe-horizontal {
+  touch-action: pan-y;
+}
+
+.day-cell {
+  grid-template-rows: 20px 16px;
+  align-content: center;
+  gap: 1px;
+  min-height: 56px;
+  padding: 6px 2px 9px;
+}
+
+.day-number {
+  line-height: 20px;
+}
+
+.day-lunar {
+  display: block;
+  width: 100%;
+  min-height: 16px;
+  overflow: hidden;
+  color: #9da1a8;
+  font-size: 10px;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.day-lunar.solar,
+.day-lunar.lunar {
+  color: #ef3f3f;
+  font-weight: 700;
+}
+
+.day-lunar.term {
+  color: #1d8f5f;
+  font-weight: 700;
+}
+
+.day-lunar.memorial {
+  color: #7f56d9;
+  font-weight: 700;
+}
+
+.day-cell.selected .day-lunar,
+.day-cell.selected .day-lunar.solar,
+.day-cell.selected .day-lunar.lunar,
+.day-cell.selected .day-lunar.term,
+.day-cell.selected .day-lunar.memorial {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.day-cell.has-label:not(.selected) {
+  background: #fff6f6;
+}
+
+.day-cell.has-label.term:not(.selected) {
+  background: #f0fbf5;
+}
+
+.event-dot {
+  bottom: 5px;
+}
+
+.swipe-tip {
+  margin: 10px 0 0;
+  color: #b0b3ba;
+  font-size: 11px;
+  text-align: center;
+}
+
+.week-day {
+  min-height: 112px;
+  gap: 4px;
+  padding: 9px 3px;
+}
+
+.week-day em,
+.week-day b {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  font-size: 10px;
+  font-style: normal;
+  line-height: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.week-day em {
+  color: #9a9da3;
+}
+
+.week-day b {
+  color: #ef3f3f;
+  font-weight: 700;
+}
+
+.week-day b.term {
+  color: #1d8f5f;
+}
+
+.week-day b.memorial {
+  color: #7f56d9;
+}
+
+.week-day.selected em,
+.week-day.selected b,
+.week-day.selected b.term,
+.week-day.selected b.memorial {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.label-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: -4px 0 14px;
+}
+
+.label-chips span {
+  max-width: 100%;
+  overflow: hidden;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #fff1f1;
+  color: #ef3f3f;
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.label-chips .term {
+  background: #eefaf3;
+  color: #16834f;
+}
+
+.label-chips .memorial {
+  background: #f4f0ff;
+  color: #6941c6;
+}
+
+.day-summary section {
+  min-width: 0;
+}
+
+.day-summary .label-chips {
+  margin: 10px 0 0;
+}
+
+.day-summary .label-chips span {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+@media (max-width: 360px) {
+  .day-cell {
+    min-height: 51px;
+    padding-right: 1px;
+    padding-left: 1px;
+  }
+
+  .day-lunar,
+  .week-day em,
+  .week-day b {
+    font-size: 9px;
+  }
+
+  .week-day {
+    min-height: 100px;
+  }
+}
+
+.workday-marker {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 1;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 17px;
+  text-align: center;
+}
+
+.workday-marker.holiday {
+  background: #ef3f3f;
+}
+
+.workday-marker.workday {
+  background: #596170;
+}
+
+.day-cell.selected .workday-marker {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+.rotating-day-text,
+.week-lunar {
+  display: block;
+  width: 100%;
+  height: 16px;
+  overflow: hidden;
+  color: #9da1a8;
+  font-size: 10px;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rotating-day-text.compact,
+.week-lunar {
+  height: 14px;
+  font-size: 10px;
+  line-height: 14px;
+}
+
+.rotating-day-text-track {
+  display: grid;
+  transform: translateY(0);
+}
+
+.rotating-day-text-track span {
+  display: block;
+  width: 100%;
+  height: 16px;
+  overflow: hidden;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rotating-day-text.compact .rotating-day-text-track span {
+  height: 14px;
+  line-height: 14px;
+}
+
+.rotating-day-text.animated .rotating-day-text-track {
+  animation: rotating-day-text calc(var(--item-count) * 2.4s) steps(var(--item-count)) infinite;
+}
+
+.rotating-day-text.compact.animated .rotating-day-text-track {
+  animation-name: rotating-week-text;
+}
+
+.rotating-day-text .solar,
+.rotating-day-text .lunar {
+  color: #ef3f3f;
+  font-weight: 700;
+}
+
+.rotating-day-text .term {
+  color: #1d8f5f;
+  font-weight: 700;
+}
+
+.rotating-day-text .memorial {
+  color: #7f56d9;
+  font-weight: 700;
+}
+
+.day-cell.selected .rotating-day-text,
+.day-cell.selected .week-lunar,
+.day-cell.selected .rotating-day-text span,
+.week-day.selected .rotating-day-text,
+.week-day.selected .week-lunar,
+.week-day.selected .rotating-day-text span {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.label-chips .holiday {
+  background: #fff1f1;
+  color: #ef3f3f;
+}
+
+.label-chips .workday {
+  background: #eef1f6;
+  color: #4b5565;
+}
+
+@keyframes rotating-day-text {
+  to {
+    transform: translateY(calc((var(--item-count) - 1) * -16px));
+  }
+}
+
+@keyframes rotating-week-text {
+  to {
+    transform: translateY(calc((var(--item-count) - 1) * -14px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rotating-day-text.animated .rotating-day-text-track {
+    animation: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .workday-marker {
+    top: 3px;
+    right: 3px;
+    min-width: 15px;
+    height: 15px;
+    padding: 0 3px;
+    border-radius: 5px;
+    font-size: 9px;
+    line-height: 15px;
+  }
+
+  .rotating-day-text,
+  .week-lunar,
+  .rotating-day-text-track span {
+    font-size: 9px;
+  }
+}
+

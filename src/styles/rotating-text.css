@@ -1,0 +1,110 @@
+﻿/* Stable one-line label rotation: each item fades in independently, avoiding track bleed at step boundaries. */
+.rotating-day-text {
+  position: relative;
+  isolation: isolate;
+  contain: paint;
+}
+
+.rotating-day-text > span {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  opacity: 1;
+  transform: translateY(0);
+  line-height: inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rotating-day-text.animated > span {
+  opacity: 0;
+  animation: rotating-day-item calc(var(--item-count) * 2.4s) ease-in-out infinite;
+  animation-delay: calc(var(--item-index) * 2.4s);
+}
+
+.rotating-day-text-track,
+.rotating-day-text.animated .rotating-day-text-track,
+.rotating-day-text.compact.animated .rotating-day-text-track {
+  animation: none;
+  transform: none;
+}
+
+@keyframes rotating-day-item {
+  0%, 31% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  39%, 100% {
+    opacity: 0;
+    transform: translateY(-45%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rotating-day-text.animated > span {
+    animation: none;
+  }
+
+  .rotating-day-text.animated > span:first-child {
+    opacity: 1;
+  }
+}
+
+/* Calendar cell visual refinement */
+.day-cell,
+.day-cell.has-label:not(.selected),
+.day-cell.has-label.term:not(.selected) {
+  background: transparent;
+}
+
+.day-cell.selected {
+  background: #ef3f3f;
+}
+
+.day-number {
+  font-weight: 760;
+}
+
+.day-cell:not(.selected) .rotating-day-text.fallback-only,
+.day-cell:not(.selected) .rotating-day-text.fallback-only > span,
+.day-cell:not(.selected) .day-lunar {
+  color: #202124;
+  font-weight: 500;
+}
+
+.day-cell.muted:not(.selected) .rotating-day-text.fallback-only,
+.day-cell.muted:not(.selected) .rotating-day-text.fallback-only > span,
+.day-cell.muted:not(.selected) .day-lunar {
+  color: #b8bbc2;
+}
+
+.day-cell:not(.selected) .rotating-day-text.has-festival,
+.day-cell:not(.selected) .rotating-day-text.has-festival > span {
+  font-weight: 800;
+}
+
+.day-cell:not(.selected) .rotating-day-text.has-festival .solar,
+.day-cell:not(.selected) .rotating-day-text.has-festival .lunar {
+  color: #ef3f3f;
+}
+
+.day-cell:not(.selected) .rotating-day-text.has-festival .term {
+  color: #16834f;
+}
+
+.day-cell:not(.selected) .rotating-day-text.has-festival .memorial {
+  color: #6941c6;
+}
+
+.day-cell.selected .rotating-day-text.fallback-only,
+.day-cell.selected .rotating-day-text.fallback-only > span,
+.day-cell.selected .rotating-day-text.has-festival,
+.day-cell.selected .rotating-day-text.has-festival > span,
+.day-cell.selected .day-lunar {
+  color: rgba(255, 255, 255, 0.92);
+}
+

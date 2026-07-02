@@ -1,0 +1,261 @@
+﻿.weekday-row,
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.weekday-row {
+  margin-bottom: 8px;
+  color: #a1a4aa;
+  font-size: 12px;
+  text-align: center;
+}
+
+.month-grid {
+  gap: 4px 2px;
+}
+
+.day-cell {
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-height: 48px;
+  place-items: center;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  color: #303136;
+}
+
+.day-cell.muted {
+  color: #c8c9cc;
+}
+
+.day-cell.today .day-number {
+  color: #ef3f3f;
+  font-weight: 760;
+}
+
+.day-cell.selected {
+  background: #ef3f3f;
+  color: #fff;
+}
+
+.day-cell.selected.today .day-number {
+  color: #fff;
+}
+
+.event-dot {
+  position: absolute;
+  bottom: 8px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.week-strip {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.week-day {
+  position: relative;
+  display: grid;
+  min-height: 86px;
+  padding: 10px 4px;
+  justify-items: center;
+  align-content: center;
+  gap: 7px;
+  border: 0;
+  border-radius: 20px;
+  background: #f7f7f8;
+  color: #3b3d42;
+}
+
+.week-day span {
+  color: #9a9da3;
+  font-size: 12px;
+}
+
+.week-day strong {
+  font-size: 20px;
+}
+
+.week-day i {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #fff;
+  color: #ef3f3f;
+  font-size: 11px;
+  font-style: normal;
+  line-height: 18px;
+}
+
+.week-day.today strong {
+  color: #ef3f3f;
+}
+
+.week-day.selected {
+  background: #ef3f3f;
+  color: #fff;
+}
+
+.week-day.selected span,
+.week-day.selected strong {
+  color: #fff;
+}
+
+.day-summary {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 132px;
+  padding: 22px;
+  margin-bottom: 14px;
+  border-radius: 24px;
+  background: #f04444;
+  color: #fff;
+}
+
+.day-summary div {
+  display: grid;
+  place-items: center;
+  min-width: 84px;
+}
+
+.day-summary span {
+  font-size: 14px;
+  opacity: 0.82;
+}
+
+.day-summary strong {
+  font-size: 54px;
+  line-height: 1;
+}
+
+.day-summary p {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 650;
+}
+
+.agenda {
+  flex: 1;
+  min-height: 220px;
+  padding-top: 16px;
+}
+
+.agenda-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.agenda-title span {
+  display: block;
+  color: #a1a4aa;
+  font-size: 12px;
+}
+
+.agenda-title strong {
+  display: block;
+  margin-top: 3px;
+  font-size: 20px;
+}
+
+.agenda-title button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #fff1f1;
+  color: #ef3f3f;
+  font-weight: 650;
+}
+
+.empty-state {
+  display: grid;
+  min-height: 150px;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  color: #b3b6bd;
+}
+
+.empty-state p {
+  margin: 0;
+}
+
+.event-list {
+  display: grid;
+  gap: 10px;
+}
+
+.event-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr);
+  gap: 4px 12px;
+  min-height: 74px;
+  padding: 14px 14px 14px 20px;
+  border: 0;
+  border-radius: 18px;
+  background: #f7f7f8;
+  color: inherit;
+  text-align: left;
+}
+
+.event-color {
+  position: absolute;
+  top: 16px;
+  bottom: 16px;
+  left: 8px;
+  width: 4px;
+  border-radius: 999px;
+}
+
+.event-time {
+  color: #8b8f97;
+  font-size: 12px;
+  grid-row: span 2;
+}
+
+.event-card strong,
+.event-card small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.event-card strong {
+  font-size: 16px;
+}
+
+.event-card small {
+  color: #8b8f97;
+  font-size: 13px;
+}
+
+.fab {
+  position: fixed;
+  right: max(18px, calc((100vw - 520px) / 2 + 18px));
+  bottom: max(20px, env(safe-area-inset-bottom));
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border-radius: 50%;
+  background: #f04444;
+  color: #fff;
+  box-shadow: 0 14px 32px rgba(240, 68, 68, 0.34);
+}
+
