@@ -7,7 +7,13 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["icon.svg", "apple-touch-icon.svg"],
+      includeAssets: [
+        "icon.svg",
+        "apple-touch-icon.svg",
+        "icons/icon-180x180.png",
+        "icons/icon-192x192.png",
+        "icons/icon-512x512.png"
+      ],
       manifest: {
         name: "轻日历",
         short_name: "日历",
@@ -20,9 +26,15 @@ export default defineConfig({
         scope: ".",
         icons: [
           {
-            src: "icon.svg",
-            sizes: "any",
-            type: "image/svg+xml",
+            src: "icons/icon-192x192.png",
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "any maskable"
+          },
+          {
+            src: "icons/icon-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
             purpose: "any maskable"
           }
         ]
