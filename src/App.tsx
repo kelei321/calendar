@@ -75,7 +75,7 @@ export default function App() {
 
   const selectedEvents = eventsByDate[activeDate] ?? [];
   const selectedMeta = useMemo(() => getCalendarDayMeta(activeDate, calendarMetaOptions), [activeDate, calendarMetaOptions]);
-  const weekDays = useMemo(() => getWeekDays(activeDate), [activeDate]);
+  const weekDays = useMemo(() => getWeekDays(activeDate, settings.weekStartsOn), [activeDate, settings.weekStartsOn]);
 
   const changePeriod = (direction: -1 | 1) => {
     const unit = view === "month" ? "month" : view === "week" ? "week" : "day";
@@ -171,7 +171,7 @@ export default function App() {
   };
 
   return (
-    <main className="app-shell">
+    <main className={`app-shell font-size-${settings.fontSize}`}>
       <section className="calendar-app" aria-label="轻日历">
         <header className="top-bar">
           <button className="icon-button" type="button" onClick={() => changePeriod(-1)} aria-label="上一段时间">

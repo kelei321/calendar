@@ -34,9 +34,19 @@ button {
 }
 
 .app-shell {
+  --app-font-scale: 1;
   min-height: 100dvh;
   padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
   background: linear-gradient(180deg, #ffffff 0%, #f6f6f7 42%, #ededee 100%);
+  font-size: calc(16px * var(--app-font-scale));
+}
+
+.app-shell.font-size-small {
+  --app-font-scale: 0.94;
+}
+
+.app-shell.font-size-large {
+  --app-font-scale: 1.08;
 }
 
 .calendar-app {

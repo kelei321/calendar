@@ -1,7 +1,12 @@
-﻿.weekday-row,
-.month-grid {
+.weekday-row,
+.month-week-row {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.weekday-row.with-week-numbers,
+.month-week-row.with-week-numbers {
+  grid-template-columns: 28px repeat(7, minmax(0, 1fr));
 }
 
 .weekday-row {
@@ -12,7 +17,27 @@
 }
 
 .month-grid {
-  gap: 4px 2px;
+  display: grid;
+  gap: 4px;
+}
+
+.month-week-row {
+  gap: 2px;
+}
+
+.week-number,
+.week-number-heading {
+  display: grid;
+  min-height: 48px;
+  place-items: center;
+  color: #b0b3ba;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.week-number-heading {
+  min-height: auto;
+  font-size: 11px;
 }
 
 .day-cell {
@@ -258,4 +283,3 @@
   color: #fff;
   box-shadow: 0 14px 32px rgba(240, 68, 68, 0.34);
 }
-

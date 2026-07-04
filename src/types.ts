@@ -1,5 +1,7 @@
 export type CalendarView = "month" | "week" | "day";
 export type FestivalLabelType = "solar" | "lunar" | "term" | "memorial" | "custom";
+export type WeekStartsOn = 0 | 1;
+export type CalendarFontSize = "small" | "standard" | "large";
 
 export interface FestivalVisibility {
   solar: boolean;
@@ -14,6 +16,9 @@ export interface CalendarSettings {
   defaultView: CalendarView;
   defaultEventDurationMinutes: 30 | 60 | 90 | 120;
   defaultEventColor: string;
+  weekStartsOn: WeekStartsOn;
+  showWeekNumbers: boolean;
+  fontSize: CalendarFontSize;
   festivalVisibility: FestivalVisibility;
   updatedAt: string;
 }

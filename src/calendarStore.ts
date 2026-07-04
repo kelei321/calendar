@@ -28,6 +28,9 @@ export const DEFAULT_CALENDAR_SETTINGS: CalendarSettings = {
   defaultView: "month",
   defaultEventDurationMinutes: 60,
   defaultEventColor: EVENT_COLORS[0],
+  weekStartsOn: 1,
+  showWeekNumbers: false,
+  fontSize: "standard",
   festivalVisibility: {
     solar: true,
     lunar: true,
@@ -138,7 +141,12 @@ function normalizeSettings(settings?: CalendarSettings): CalendarSettings {
     },
     defaultEventColor: EVENT_COLORS.includes(settings?.defaultEventColor ?? "")
       ? settings?.defaultEventColor ?? DEFAULT_CALENDAR_SETTINGS.defaultEventColor
-      : DEFAULT_CALENDAR_SETTINGS.defaultEventColor
+      : DEFAULT_CALENDAR_SETTINGS.defaultEventColor,
+    weekStartsOn: settings?.weekStartsOn === 0 ? 0 : 1,
+    showWeekNumbers: settings?.showWeekNumbers ?? DEFAULT_CALENDAR_SETTINGS.showWeekNumbers,
+    fontSize: ["small", "standard", "large"].includes(settings?.fontSize ?? "")
+      ? settings?.fontSize ?? DEFAULT_CALENDAR_SETTINGS.fontSize
+      : DEFAULT_CALENDAR_SETTINGS.fontSize
   };
 }
 

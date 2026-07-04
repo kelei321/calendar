@@ -1,7 +1,15 @@
 import { useMemo, useState } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight, Plus, Trash2, X } from "lucide-react";
 import { EVENT_COLORS } from "../eventDefaults";
-import type { CalendarSettings, CalendarView, CustomFestival, CustomFestivalDraft, FestivalVisibility } from "../types";
+import type {
+  CalendarFontSize,
+  CalendarSettings,
+  CalendarView,
+  CustomFestival,
+  CustomFestivalDraft,
+  FestivalVisibility,
+  WeekStartsOn
+} from "../types";
 
 type SettingsScreen = "settings" | "festivals";
 
@@ -18,6 +26,17 @@ const VIEW_LABELS: Record<CalendarView, string> = {
   month: "月视图",
   week: "周视图",
   day: "日视图"
+};
+
+const FONT_SIZE_LABELS: Record<CalendarFontSize, string> = {
+  small: "小",
+  standard: "标准",
+  large: "大"
+};
+
+const WEEK_START_LABELS: Record<WeekStartsOn, string> = {
+  0: "周日",
+  1: "周一"
 };
 
 const DURATION_OPTIONS: CalendarSettings["defaultEventDurationMinutes"][] = [30, 60, 90, 120];
@@ -124,21 +143,23 @@ export function SettingsSheet({
   };
 
   return (
-    <div className="sheet-backdrop" role="presentation">
-      <section className="settings-sheet" role="dialog" aria-modal="true" aria-label={screen === "settings" ? "设置" : "节日管理"}>
-        {screen === "settings" ? (
-          <>
-            <header className="sheet-header settings-header">
-              <button className="icon-button" type="button" onClick={onClose} aria-label="关闭设置">
-                <X size={20} />
-              </button>
-              <strong>设置</strong>
-              <span />
-            </header>
+    <section className="settings-page" role="dialog" aria-modal="true" aria-label={screen === "settings" ? "设置" : "节日管理"}>
+      {screen === "settings" ? (
+        <>
+          <header className="settings-page-header">
+            <button className="icon-button" type="button" onClick={onClose} aria-label="关闭设置">
+              <X size={20} />
+            </button>
+            <strong>设置</strong>
+            <span />
+          </header>
 
-            <section className="settings-group" aria-label="日历设置">
+          <div className="settings-page-body">
+            <section className="settings-group" aria-label="日历显示">
+              <h2>日历显示</h2>
               <SegmentedRow
                 title="默认视图"
+                desc={VIEW_LABELS[settings.defaultView]}
                 value={settings.defaultView}
                 options={[
                   ["month", "月"],
@@ -148,7 +169,39 @@ export function SettingsSheet({
                 onChange={(value) => updateSettings({ defaultView: value })}
               />
               <SegmentedRow
+                title="一周开始日"
+                desc={`当前从${WEEK_START_LABELS[settings.weekStartsOn]}开始`}
+                value={settings.weekStartsOn}
+                options={[
+                  [1, "周一"],
+                  [0, "周日"]
+                ]}
+                onChange={(value) => updateSettings({ weekStartsOn: value })}
+              />
+              <ToggleRow
+                title="显示周数"
+                desc="在月视图左侧显示 ISO 周数"
+                checked={settings.showWeekNumbers}
+                onChange={(checked) => updateSettings({ showWeekNumbers: checked })}
+              />
+              <SegmentedRow
+                title="字体大小"
+                desc={`当前为${FONT_SIZE_LABELS[settings.fontSize]}`}
+                value={settings.fontSize}
+                options={[
+                  ["small", "小"],
+                  ["standard", "标准"],
+                  ["large", "大"]
+                ]}
+                onChange={(value) => updateSettings({ fontSize: value })}
+              />
+            </section>
+
+            <section className="settings-group" aria-label="日程设置">
+              <h2>日程设置</h2>
+              <SegmentedRow
                 title="日程默认值"
+                desc={`${settings.defaultEventDurationMinutes}分钟`}
                 value={settings.defaultEventDurationMinutes}
                 options={DURATION_OPTIONS.map((duration) => [duration, `${duration}分钟`] as const)}
                 onChange={(value) => updateSettings({ defaultEventDurationMinutes: value })}
@@ -161,6 +214,7 @@ export function SettingsSheet({
             </section>
 
             <section className="settings-group" aria-label="功能设置">
+              <h2>功能设置</h2>
               <button className="settings-nav-row highlighted" type="button" onClick={() => setScreen("festivals")}>
                 <span className="settings-row-icon festival-icon">
                   <CalendarDays size={18} />
@@ -180,17 +234,19 @@ export function SettingsSheet({
             </section>
 
             <p className="settings-footnote">本地保存，离线可用</p>
-          </>
-        ) : (
-          <>
-            <header className="sheet-header settings-header">
-              <button className="icon-button" type="button" onClick={() => setScreen("settings")} aria-label="返回设置">
-                <ChevronLeft size={21} />
-              </button>
-              <strong>节日管理</strong>
-              <button className="text-button" type="button" onClick={openCreateFestival}>新增</button>
-            </header>
+          </div>
+        </>
+      ) : (
+        <>
+          <header className="settings-page-header">
+            <button className="icon-button" type="button" onClick={() => setScreen("settings")} aria-label="返回设置">
+              <ChevronLeft size={21} />
+            </button>
+            <strong>节日管理</strong>
+            <button className="text-button" type="button" onClick={openCreateFestival}>新增</button>
+          </header>
 
+          <div className="settings-page-body">
             <section className="settings-group" aria-label="内置节日">
               <h2>内置节日</h2>
               {FESTIVAL_ROWS.map((row) => (
@@ -230,80 +286,82 @@ export function SettingsSheet({
                 ))
               )}
             </section>
-          </>
-        )}
-
-        {festivalDraft && (
-          <div className="nested-sheet-backdrop" role="presentation">
-            <section className="festival-editor" role="dialog" aria-modal="true" aria-label={editingFestival ? "编辑节日" : "新增节日"}>
-              <header className="festival-editor-header">
-                <button type="button" onClick={closeFestivalEditor}>取消</button>
-                <strong>{editingFestival ? "编辑节日" : "新增节日"}</strong>
-                <button type="button" onClick={submitFestival}>完成</button>
-              </header>
-
-              <label className="field">
-                <span>节日名称</span>
-                <input value={festivalDraft.name} onChange={(event) => updateFestivalDraft("name", event.target.value)} placeholder="例如：家人生日" />
-              </label>
-
-              <label className="field">
-                <span>日期</span>
-                <input
-                  type="date"
-                  value={`2026-${festivalDraft.monthDay}`}
-                  onChange={(event) => updateFestivalDraft("monthDay", event.target.value.slice(5))}
-                />
-              </label>
-
-              <div className="color-row festival-color-row" aria-label="节日颜色">
-                {EVENT_COLORS.map((color) => (
-                  <button
-                    className={festivalDraft.color === color ? "selected" : ""}
-                    key={color}
-                    type="button"
-                    style={{ background: color }}
-                    onClick={() => updateFestivalDraft("color", color)}
-                    aria-label={`选择颜色 ${color}`}
-                  />
-                ))}
-              </div>
-
-              <ToggleRow
-                title="启用"
-                desc="关闭后该节日不会显示在日历中"
-                checked={festivalDraft.enabled}
-                onChange={(checked) => updateFestivalDraft("enabled", checked)}
-              />
-
-              <div className="sheet-hint">
-                <CalendarDays size={15} />
-                <span>按公历日期每年重复</span>
-              </div>
-
-              {error && <p className="form-error">{error}</p>}
-
-              {editingFestival && (
-                <button className="delete-button" type="button" onClick={removeFestival}>
-                  <Trash2 size={17} />
-                  删除节日
-                </button>
-              )}
-            </section>
           </div>
-        )}
-      </section>
-    </div>
+        </>
+      )}
+
+      {festivalDraft && (
+        <div className="nested-sheet-backdrop" role="presentation">
+          <section className="festival-editor" role="dialog" aria-modal="true" aria-label={editingFestival ? "编辑节日" : "新增节日"}>
+            <header className="festival-editor-header">
+              <button type="button" onClick={closeFestivalEditor}>取消</button>
+              <strong>{editingFestival ? "编辑节日" : "新增节日"}</strong>
+              <button type="button" onClick={submitFestival}>完成</button>
+            </header>
+
+            <label className="field">
+              <span>节日名称</span>
+              <input value={festivalDraft.name} onChange={(event) => updateFestivalDraft("name", event.target.value)} placeholder="例如：家人生日" />
+            </label>
+
+            <label className="field">
+              <span>日期</span>
+              <input
+                type="date"
+                value={`2026-${festivalDraft.monthDay}`}
+                onChange={(event) => updateFestivalDraft("monthDay", event.target.value.slice(5))}
+              />
+            </label>
+
+            <div className="color-row festival-color-row" aria-label="节日颜色">
+              {EVENT_COLORS.map((color) => (
+                <button
+                  className={festivalDraft.color === color ? "selected" : ""}
+                  key={color}
+                  type="button"
+                  style={{ background: color }}
+                  onClick={() => updateFestivalDraft("color", color)}
+                  aria-label={`选择颜色 ${color}`}
+                />
+              ))}
+            </div>
+
+            <ToggleRow
+              title="启用"
+              desc="关闭后该节日不会显示在日历中"
+              checked={festivalDraft.enabled}
+              onChange={(checked) => updateFestivalDraft("enabled", checked)}
+            />
+
+            <div className="sheet-hint">
+              <CalendarDays size={15} />
+              <span>按公历日期每年重复</span>
+            </div>
+
+            {error && <p className="form-error">{error}</p>}
+
+            {editingFestival && (
+              <button className="delete-button" type="button" onClick={removeFestival}>
+                <Trash2 size={17} />
+                删除节日
+              </button>
+            )}
+          </section>
+        </div>
+      )}
+    </section>
   );
 }
 
 function SegmentedRow<T extends string | number>({
   title,
+  desc,
   value,
   options,
   onChange
 }: {
   title: string;
+  desc: string;
   value: T;
   options: readonly (readonly [T, string])[];
   onChange: (value: T) => void;
@@ -312,7 +370,7 @@ function SegmentedRow<T extends string | number>({
     <div className="settings-control-row">
       <span>
         <strong>{title}</strong>
-        <small>{typeof value === "string" && value in VIEW_LABELS ? VIEW_LABELS[value as CalendarView] : `${value}分钟`}</small>
+        <small>{desc}</small>
       </span>
       <div className="settings-segmented">
         {options.map(([optionValue, label]) => (
