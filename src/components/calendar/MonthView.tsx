@@ -2,24 +2,27 @@ import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import dayjs from "dayjs";
 import {
   DATE_FORMAT,
-  WEEK_DAYS,
+  getIsoWeekNumber,
   getMonthGrid,
+  getWeekDayLabels,
   isSameMonth,
   isToday,
   toDateKey
 } from "../../dateUtils";
 import { getCalendarDayMeta } from "../../holidays";
-import type { CalendarEvent } from "../../types";
+import type { CalendarEvent, CalendarSettings, CustomFestival } from "../../types";
 import { RotatingDayText, WorkdayBadge } from "./CalendarLabels";
 
 interface MonthViewProps {
   activeDate: string;
   eventsByDate: Record<string, CalendarEvent[]>;
+  settings: CalendarSettings;
+  customFestivals: CustomFestival[];
   onSelect: (date: string) => void;
   onCreate: (date: string) => void;
 }
 
-export function MonthView({ activeDate, eventsByDate, onSelect, onCreate }: MonthViewProps) {
+export function MonthView({ activeDate, eventsByDate, settings, customFestivals, onSelect, onCreate }: MonthViewProps) {
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const startRef = useRef<{ x: number; y: number; time: number } | null>(null);
   const didDragRef = useRef(false);
@@ -30,6 +33,7 @@ export function MonthView({ activeDate, eventsByDate, onSelect, onCreate }: Mont
   const [pendingDirection, setPendingDirection] = useState<-1 | 0 | 1>(0);
   const [pageHeight, setPageHeight] = useState(288);
 
+  const weekdayLabels = useMemo(() => getWeekDayLabels(settings.weekStartsOn), [settings.weekStartsOn]);
   const monthAnchors = useMemo(
     () => [
       dayjs(activeDate).subtract(1, "month").format(DATE_FORMAT),
@@ -61,7 +65,7 @@ export function MonthView({ activeDate, eventsByDate, onSelect, onCreate }: Mont
   }, []);
 
   const getSixWeekMonthGrid = (anchor: string) => {
-    const days = [...getMonthGrid(anchor)];
+    const days = [...getMonthGrid(anchor, settings.weekStartsOn)];
     while (days.length < 42) {
       days.push(days[days.length - 1].add(1, "day"));
     }
@@ -152,8 +156,9 @@ export function MonthView({ activeDate, eventsByDate, onSelect, onCreate }: Mont
       onPointerUp={settleDrag}
       onPointerCancel={onPointerCancel}
     >
-      <div className="weekday-row">
-        {WEEK_DAYS.map((day) => (
+      <div className={["weekday-row", settings.showWeekNumbers ? "with-week-numbers" : ""].join(" ")}>
+        {settings.showWeekNumbers && <span className="week-number-heading">周</span>}
+        {weekdayLabels.map((day) => (
           <span key={day}>{day}</span>
         ))}
       </div>
@@ -163,32 +168,50 @@ export function MonthView({ activeDate, eventsByDate, onSelect, onCreate }: Mont
           style={{ transform: `translateY(${targetOffset + dragY - pageHeight}px)` }}
           onTransitionEnd={onTransitionEnd}
         >
-          {monthAnchors.map((anchor) => (
-            <div className="month-carousel-page" key={anchor} aria-hidden={anchor !== activeDate}>
-              <div className="month-grid">
-                {getSixWeekMonthGrid(anchor).map((date) => {
-                  const dateKey = toDateKey(date);
-                  const count = eventsByDate[dateKey]?.length ?? 0;
-                  const selected = dateKey === activeDate;
-                  const meta = getCalendarDayMeta(dateKey);
-                  return (
-                    <button
-                      className={["day-cell", selected ? "selected" : "", isToday(date) ? "today" : "", isSameMonth(date, anchor) ? "" : "muted", meta.labels.length ? "has-label" : ""].join(" ")}
-                      key={dateKey}
-                      type="button"
-                      onClick={() => selectDate(dateKey)}
-                      onDoubleClick={() => onCreate(dateKey)}
-                    >
-                      {meta.workdayMarker && <WorkdayBadge marker={meta.workdayMarker} />}
-                      <span className="day-number">{date.date()}</span>
-                      <RotatingDayText items={meta.rotatingTexts} fallback={meta.primaryText} fallbackOnly={meta.labels.length === 0} />
-                      {count > 0 && <span className="event-dot" aria-label={`${count} 个日程`} />}
-                    </button>
-                  );
-                })}
+          {monthAnchors.map((anchor) => {
+            const days = getSixWeekMonthGrid(anchor);
+            return (
+              <div className="month-carousel-page" key={anchor} aria-hidden={anchor !== activeDate}>
+                <div className={["month-grid", settings.showWeekNumbers ? "with-week-numbers" : ""].join(" ")}>
+                  {Array.from({ length: 6 }, (_, weekIndex) => {
+                    const weekDays = days.slice(weekIndex * 7, weekIndex * 7 + 7);
+                    return (
+                      <div className={["month-week-row", settings.showWeekNumbers ? "with-week-numbers" : ""].join(" ")} key={`${anchor}-${weekIndex}`}>
+                        {settings.showWeekNumbers && (
+                          <span className="week-number" aria-label={`第 ${getIsoWeekNumber(weekDays[0])} 周`}>
+                            {getIsoWeekNumber(weekDays[0])}
+                          </span>
+                        )}
+                        {weekDays.map((date) => {
+                          const dateKey = toDateKey(date);
+                          const count = eventsByDate[dateKey]?.length ?? 0;
+                          const selected = dateKey === activeDate;
+                          const meta = getCalendarDayMeta(dateKey, {
+                            festivalVisibility: settings.festivalVisibility,
+                            customFestivals
+                          });
+                          return (
+                            <button
+                              className={["day-cell", selected ? "selected" : "", isToday(date) ? "today" : "", isSameMonth(date, anchor) ? "" : "muted", meta.labels.length ? "has-label" : ""].join(" ")}
+                              key={dateKey}
+                              type="button"
+                              onClick={() => selectDate(dateKey)}
+                              onDoubleClick={() => onCreate(dateKey)}
+                            >
+                              {meta.workdayMarker && <WorkdayBadge marker={meta.workdayMarker} />}
+                              <span className="day-number">{date.date()}</span>
+                              <RotatingDayText items={meta.rotatingTexts} fallback={meta.primaryText} fallbackOnly={meta.labels.length === 0} />
+                              {count > 0 && <span className="event-dot" aria-label={`${count} 个日程`} />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
       <p className="swipe-tip">上下滑动切换月份</p>

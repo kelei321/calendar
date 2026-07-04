@@ -1,6 +1,7 @@
 ﻿@import "./styles/base.css";
 @import "./styles/calendar.css";
 @import "./styles/editor.css";
+@import "./styles/settings.css";
 @import "./styles/calendar-labels.css";
 @import "./styles/rotating-text.css";
 @import "./styles/month-carousel.css";
