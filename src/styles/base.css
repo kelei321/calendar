@@ -54,10 +54,15 @@ button {
 
 .top-bar {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
   gap: 8px;
   align-items: center;
   min-height: 58px;
+}
+
+.top-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .icon-button,

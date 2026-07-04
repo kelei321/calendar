@@ -150,6 +150,11 @@
   color: #6941c6;
 }
 
+.label-chips .custom {
+  background: color-mix(in srgb, var(--festival-color, #ef3f3f) 12%, #fff);
+  color: var(--festival-color, #ef3f3f);
+}
+
 .day-summary section {
   min-width: 0;
 }
@@ -271,6 +276,11 @@
 
 .rotating-day-text .memorial {
   color: #7f56d9;
+  font-weight: 700;
+}
+
+.rotating-day-text .custom {
+  color: var(--festival-color, #ef3f3f);
   font-weight: 700;
 }
 

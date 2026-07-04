@@ -9,17 +9,19 @@ import {
   toDateKey
 } from "../../dateUtils";
 import { getCalendarDayMeta } from "../../holidays";
-import type { CalendarEvent } from "../../types";
+import type { CalendarEvent, CalendarSettings, CustomFestival } from "../../types";
 import { RotatingDayText, WorkdayBadge } from "./CalendarLabels";
 
 interface MonthViewProps {
   activeDate: string;
   eventsByDate: Record<string, CalendarEvent[]>;
+  settings: CalendarSettings;
+  customFestivals: CustomFestival[];
   onSelect: (date: string) => void;
   onCreate: (date: string) => void;
 }
 
-export function MonthView({ activeDate, eventsByDate, onSelect, onCreate }: MonthViewProps) {
+export function MonthView({ activeDate, eventsByDate, settings, customFestivals, onSelect, onCreate }: MonthViewProps) {
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const startRef = useRef<{ x: number; y: number; time: number } | null>(null);
   const didDragRef = useRef(false);
@@ -170,7 +172,10 @@ export function MonthView({ activeDate, eventsByDate, onSelect, onCreate }: Mont
                   const dateKey = toDateKey(date);
                   const count = eventsByDate[dateKey]?.length ?? 0;
                   const selected = dateKey === activeDate;
-                  const meta = getCalendarDayMeta(dateKey);
+                  const meta = getCalendarDayMeta(dateKey, {
+                    festivalVisibility: settings.festivalVisibility,
+                    customFestivals
+                  });
                   return (
                     <button
                       className={["day-cell", selected ? "selected" : "", isToday(date) ? "today" : "", isSameMonth(date, anchor) ? "" : "muted", meta.labels.length ? "has-label" : ""].join(" ")}

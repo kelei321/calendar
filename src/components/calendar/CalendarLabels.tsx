@@ -29,12 +29,12 @@ export function RotatingDayText({ items, fallback, compact = false, fallbackOnly
 
   const activeItem = displayItems[activeIndex % displayItems.length];
   return (
-    <span
-      className={["rotating-day-text", compact ? "compact" : "", fallbackOnly ? "fallback-only" : "has-festival", displayItems.length > 1 ? "switching" : ""].join(" ")}
-      style={{ "--item-count": displayItems.length } as CSSProperties}
-    >
-      <span className={activeItem.type} key={`${activeItem.type}-${activeItem.name}`}>
-        {activeItem.name}
+      <span
+        className={["rotating-day-text", compact ? "compact" : "", fallbackOnly ? "fallback-only" : "has-festival", displayItems.length > 1 ? "switching" : ""].join(" ")}
+        style={{ "--item-count": displayItems.length, "--festival-color": activeItem.color } as CSSProperties}
+      >
+        <span className={activeItem.type} key={`${activeItem.type}-${activeItem.name}`}>
+          {activeItem.name}
       </span>
     </span>
   );
@@ -46,7 +46,7 @@ export function LabelChips({ labels, workdayMarker }: { labels: DayLabel[]; work
     <div className="label-chips" aria-label="节日与纪念日">
       {workdayMarker && <span className={workdayMarker.type}>{workdayMarker.text} {workdayMarker.reason}</span>}
       {labels.map((label) => (
-        <span className={label.type} key={`${label.type}-${label.name}`}>{label.name}</span>
+        <span className={label.type} key={`${label.type}-${label.name}`} style={{ "--festival-color": label.color } as CSSProperties}>{label.name}</span>
       ))}
     </div>
   );
