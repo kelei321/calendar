@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { ChevronLeft, ChevronRight, Plus, Settings } from "lucide-react";
 import {
+  compareCustomFestivals,
   DEFAULT_CALENDAR_SETTINGS,
   deleteCustomFestival,
   deleteEvent,
@@ -52,10 +53,6 @@ export default function App() {
 
   async function refreshEvents() {
     setEvents(await getAllEvents());
-  }
-
-  async function refreshCustomFestivals() {
-    setCustomFestivals(await getAllCustomFestivals());
   }
 
   const eventsByDate = useMemo(() => {
@@ -160,18 +157,22 @@ export default function App() {
   const upsertCustomFestival = async (festivalDraft: CustomFestivalDraft, editingId?: string) => {
     const existing = editingId ? customFestivals.find((festival) => festival.id === editingId) : null;
     const now = new Date().toISOString();
-    await saveCustomFestival({
+    const festival: CustomFestival = {
       id: existing?.id ?? crypto.randomUUID(),
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
       ...festivalDraft
-    });
-    await refreshCustomFestivals();
+    };
+
+    await saveCustomFestival(festival);
+    setCustomFestivals((current) =>
+      [...current.filter((item) => item.id !== festival.id), festival].sort(compareCustomFestivals)
+    );
   };
 
   const removeCustomFestival = async (id: string) => {
     await deleteCustomFestival(id);
-    await refreshCustomFestivals();
+    setCustomFestivals((current) => current.filter((festival) => festival.id !== id));
   };
 
   return (

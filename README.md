@@ -33,6 +33,7 @@
 ## 构建与校验
 
 - 普通生产构建：`npm run build`
+- 单元测试：`npm test`
 - 类型检查：`npm run typecheck`
 - 完整 CI 校验：`npm run ci`
 - GitHub Pages 构建：`npm run build:pages`
@@ -64,8 +65,9 @@
 | 命令 | 说明 |
 | --- | --- |
 | `npm run dev` | 启动本地开发服务 |
+| `npm test` | 执行单元测试 |
 | `npm run typecheck` | 执行 TypeScript 类型检查 |
 | `npm run build` | 执行普通生产构建 |
 | `npm run build:pages` | 执行 GitHub Pages 构建 |
-| `npm run ci` | 执行 typecheck 和 build |
+| `npm run ci` | 依次执行单元测试、typecheck 和 build |
 | `npm run preview` | 本地预览构建产物 |

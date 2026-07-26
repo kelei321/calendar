@@ -114,7 +114,7 @@ export function compareEvents(a: CalendarEvent, b: CalendarEvent) {
   return a.createdAt.localeCompare(b.createdAt);
 }
 
-function compareCustomFestivals(a: CustomFestival, b: CustomFestival) {
+export function compareCustomFestivals(a: CustomFestival, b: CustomFestival) {
   const dateCompare = a.monthDay.localeCompare(b.monthDay);
   if (dateCompare !== 0) return dateCompare;
   return a.name.localeCompare(b.name, "zh-CN");
