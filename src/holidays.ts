@@ -1,11 +1,14 @@
 ﻿import dayjs from "dayjs";
 
-export type DayLabelType = "solar" | "lunar" | "term" | "memorial";
+import type { CustomFestival, FestivalLabelType, FestivalVisibility } from "./types";
+
+export type DayLabelType = FestivalLabelType;
 export type WorkdayMarkerType = "holiday" | "workday";
 
 export interface DayLabel {
   name: string;
   type: DayLabelType;
+  color?: string;
 }
 
 export interface WorkdayMarker {
@@ -19,6 +22,11 @@ export interface CalendarDayMeta {
   primaryText: string;
   workdayMarker: WorkdayMarker | null;
   rotatingTexts: DayLabel[];
+}
+
+export interface CalendarDayMetaOptions {
+  festivalVisibility?: FestivalVisibility;
+  customFestivals?: CustomFestival[];
 }
 
 interface LunarDate {
@@ -240,26 +248,39 @@ function getCalculatedSolarFestivals(dateKey: string, term: string | null) {
   return festivals;
 }
 
-export function getDayLabels(dateKey: string): DayLabel[] {
+export function getDayLabels(dateKey: string, options: CalendarDayMetaOptions = {}): DayLabel[] {
   const labels: DayLabel[] = [];
+  const visibility = options.festivalVisibility;
   const solarKey = dayjs(dateKey).format("MM-DD");
   const lunar = solarToLunar(dateKey);
   const term = getSolarTerm(dateKey);
-  for (const name of SOLAR_FESTIVALS[solarKey] ?? []) labels.push({ name, type: "solar" });
-  for (const name of getCalculatedSolarFestivals(dateKey, term)) labels.push({ name, type: "solar" });
+  if (visibility?.solar ?? true) {
+    for (const name of SOLAR_FESTIVALS[solarKey] ?? []) labels.push({ name, type: "solar" });
+    for (const name of getCalculatedSolarFestivals(dateKey, term)) labels.push({ name, type: "solar" });
+  }
   if (lunar && !lunar.isLeap) {
     const lunarKey = `${String(lunar.month).padStart(2, "0")}-${String(lunar.day).padStart(2, "0")}`;
-    for (const name of LUNAR_FESTIVALS[lunarKey] ?? []) labels.push({ name, type: "lunar" });
-    if (lunar.month === 12 && lunar.day === monthDays(lunar.year, 12)) labels.push({ name: "除夕", type: "lunar" });
+    if (visibility?.lunar ?? true) {
+      for (const name of LUNAR_FESTIVALS[lunarKey] ?? []) labels.push({ name, type: "lunar" });
+      if (lunar.month === 12 && lunar.day === monthDays(lunar.year, 12)) labels.push({ name: "除夕", type: "lunar" });
+    }
   }
-  if (term) labels.push({ name: term, type: "term" });
-  for (const name of MEMORIAL_DAYS[solarKey] ?? []) labels.push({ name, type: "memorial" });
+  if (term && (visibility?.term ?? true)) labels.push({ name: term, type: "term" });
+  if (visibility?.memorial ?? true) {
+    for (const name of MEMORIAL_DAYS[solarKey] ?? []) labels.push({ name, type: "memorial" });
+  }
+  for (const festival of options.customFestivals ?? []) {
+    if (festival.enabled && festival.monthDay === solarKey) {
+      labels.push({ name: festival.name, type: "custom", color: festival.color });
+    }
+  }
   return labels;
 }
 
-export function getPrimaryDayText(dateKey: string) {
-  const important = getDayLabels(dateKey)[0];
+export function getPrimaryDayText(dateKey: string, options: CalendarDayMetaOptions = {}) {
+  const important = getDayLabels(dateKey, options)[0];
   if (important) return important.name;
+  if (options.festivalVisibility?.lunar === false) return "";
   const lunar = solarToLunar(dateKey);
   if (!lunar) return "";
   return lunar.day === 1 ? `${lunar.isLeap ? "闰" : ""}${lunar.month}月` : LUNAR_DAY_NAMES[lunar.day - 1];
@@ -269,14 +290,14 @@ export function getWorkdayMarker(dateKey: string): WorkdayMarker | null {
   return CHINA_HOLIDAY_OVERRIDES[dateKey] ?? null;
 }
 
-export function getCalendarDayMeta(dateKey: string): CalendarDayMeta {
-  const labels = getDayLabels(dateKey);
-  const primaryText = getPrimaryDayText(dateKey);
+export function getCalendarDayMeta(dateKey: string, options: CalendarDayMetaOptions = {}): CalendarDayMeta {
+  const labels = getDayLabels(dateKey, options);
+  const primaryText = getPrimaryDayText(dateKey, options);
 
   return {
     labels,
     primaryText,
-    workdayMarker: getWorkdayMarker(dateKey),
+    workdayMarker: options.festivalVisibility?.workday ?? true ? getWorkdayMarker(dateKey) : null,
     rotatingTexts: labels.length > 0 ? labels : [{ name: primaryText, type: "lunar" }]
   };
 }

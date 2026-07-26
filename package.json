@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
+    "test": "node --import tsx --test tests/dateUtils.test.ts tests/calendarSettings.test.ts",
     "typecheck": "tsc -b",
     "build": "vite build",
     "build:pages": "vite build --base=/calendar/",
-    "ci": "npm run typecheck && npm run build",
+    "ci": "npm run test && npm run typecheck && npm run build",
     "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
@@ -24,6 +25,7 @@
   "devDependencies": {
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.1",
+    "tsx": "^4.23.1",
     "typescript": "^5.7.2"
   }
 }

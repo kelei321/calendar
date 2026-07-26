@@ -34,9 +34,19 @@ button {
 }
 
 .app-shell {
+  --app-font-scale: 1;
   min-height: 100dvh;
   padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
   background: linear-gradient(180deg, #ffffff 0%, #f6f6f7 42%, #ededee 100%);
+  font-size: calc(16px * var(--app-font-scale));
+}
+
+.app-shell.font-size-small {
+  --app-font-scale: 0.9;
+}
+
+.app-shell.font-size-large {
+  --app-font-scale: 1.12;
 }
 
 .calendar-app {
@@ -54,10 +64,15 @@ button {
 
 .top-bar {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
   gap: 8px;
   align-items: center;
   min-height: 58px;
+}
+
+.top-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .icon-button,
@@ -90,7 +105,7 @@ button {
 .title-button span {
   display: block;
   overflow: hidden;
-  font-size: 22px;
+  font-size: calc(22px * var(--app-font-scale));
   font-weight: 720;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -100,7 +115,7 @@ button {
   display: block;
   margin-top: 3px;
   color: #9a9da3;
-  font-size: 12px;
+  font-size: calc(12px * var(--app-font-scale));
 }
 
 .view-tabs {

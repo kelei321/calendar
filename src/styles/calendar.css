@@ -1,18 +1,43 @@
-﻿.weekday-row,
-.month-grid {
+.weekday-row,
+.month-week-row {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.weekday-row.with-week-numbers,
+.month-week-row.with-week-numbers {
+  grid-template-columns: 28px repeat(7, minmax(0, 1fr));
 }
 
 .weekday-row {
   margin-bottom: 8px;
   color: #a1a4aa;
-  font-size: 12px;
+  font-size: calc(12px * var(--app-font-scale));
   text-align: center;
 }
 
 .month-grid {
-  gap: 4px 2px;
+  display: grid;
+  gap: 4px;
+}
+
+.month-week-row {
+  gap: 2px;
+}
+
+.week-number,
+.week-number-heading {
+  display: grid;
+  min-height: 48px;
+  place-items: center;
+  color: #b0b3ba;
+  font-size: calc(10px * var(--app-font-scale));
+  font-weight: 700;
+}
+
+.week-number-heading {
+  min-height: auto;
+  font-size: calc(11px * var(--app-font-scale));
 }
 
 .day-cell {
@@ -77,11 +102,11 @@
 
 .week-day span {
   color: #9a9da3;
-  font-size: 12px;
+  font-size: calc(12px * var(--app-font-scale));
 }
 
 .week-day strong {
-  font-size: 20px;
+  font-size: calc(20px * var(--app-font-scale));
 }
 
 .week-day i {
@@ -91,7 +116,7 @@
   border-radius: 999px;
   background: #fff;
   color: #ef3f3f;
-  font-size: 11px;
+  font-size: calc(11px * var(--app-font-scale));
   font-style: normal;
   line-height: 18px;
 }
@@ -129,18 +154,18 @@
 }
 
 .day-summary span {
-  font-size: 14px;
+  font-size: calc(14px * var(--app-font-scale));
   opacity: 0.82;
 }
 
 .day-summary strong {
-  font-size: 54px;
+  font-size: calc(54px * var(--app-font-scale));
   line-height: 1;
 }
 
 .day-summary p {
   margin: 0;
-  font-size: 17px;
+  font-size: calc(17px * var(--app-font-scale));
   font-weight: 650;
 }
 
@@ -160,13 +185,13 @@
 .agenda-title span {
   display: block;
   color: #a1a4aa;
-  font-size: 12px;
+  font-size: calc(12px * var(--app-font-scale));
 }
 
 .agenda-title strong {
   display: block;
   margin-top: 3px;
-  font-size: 20px;
+  font-size: calc(20px * var(--app-font-scale));
 }
 
 .agenda-title button {
@@ -224,7 +249,7 @@
 
 .event-time {
   color: #8b8f97;
-  font-size: 12px;
+  font-size: calc(12px * var(--app-font-scale));
   grid-row: span 2;
 }
 
@@ -237,12 +262,12 @@
 }
 
 .event-card strong {
-  font-size: 16px;
+  font-size: calc(16px * var(--app-font-scale));
 }
 
 .event-card small {
   color: #8b8f97;
-  font-size: 13px;
+  font-size: calc(13px * var(--app-font-scale));
 }
 
 .fab {
@@ -258,4 +283,3 @@
   color: #fff;
   box-shadow: 0 14px 32px rgba(240, 68, 68, 0.34);
 }
-

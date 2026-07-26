@@ -1,4 +1,27 @@
 export type CalendarView = "month" | "week" | "day";
+export type FestivalLabelType = "solar" | "lunar" | "term" | "memorial" | "custom";
+export type WeekStartsOn = 0 | 1;
+export type CalendarFontSize = "small" | "standard" | "large";
+
+export interface FestivalVisibility {
+  solar: boolean;
+  lunar: boolean;
+  term: boolean;
+  memorial: boolean;
+  workday: boolean;
+}
+
+export interface CalendarSettings {
+  id: "default";
+  defaultView: CalendarView;
+  defaultEventDurationMinutes: 30 | 60 | 90 | 120;
+  defaultEventColor: string;
+  weekStartsOn: WeekStartsOn;
+  showWeekNumbers: boolean;
+  fontSize: CalendarFontSize;
+  festivalVisibility: FestivalVisibility;
+  updatedAt: string;
+}
 
 export interface CalendarEvent {
   id: string;
@@ -14,3 +37,15 @@ export interface CalendarEvent {
 }
 
 export type EventDraft = Omit<CalendarEvent, "id" | "createdAt" | "updatedAt">;
+
+export interface CustomFestival {
+  id: string;
+  name: string;
+  monthDay: string;
+  color: string;
+  enabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CustomFestivalDraft = Pick<CustomFestival, "name" | "monthDay" | "color" | "enabled">;

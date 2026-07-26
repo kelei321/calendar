@@ -1,7 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { deleteEvent, getAllEvents, saveEvent } from "./calendarStore";
+import { ChevronLeft, ChevronRight, Plus, Settings } from "lucide-react";
+import {
+  compareCustomFestivals,
+  DEFAULT_CALENDAR_SETTINGS,
+  deleteCustomFestival,
+  deleteEvent,
+  getAllCustomFestivals,
+  getAllEvents,
+  getSettings,
+  saveCustomFestival,
+  saveEvent,
+  saveSettings
+} from "./calendarStore";
 import { DATE_FORMAT, formatDayTitle, formatMonthTitle, getWeekDays, isToday, today } from "./dateUtils";
 import { emptyDraft } from "./eventDefaults";
 import { getCalendarDayMeta } from "./holidays";
@@ -10,19 +21,35 @@ import { DaySummary } from "./components/calendar/DaySummary";
 import { MonthView } from "./components/calendar/MonthView";
 import { WeekView } from "./components/calendar/WeekView";
 import { EventEditor } from "./components/EventEditor";
-import type { CalendarEvent, CalendarView, EventDraft } from "./types";
+import { SettingsSheet } from "./components/SettingsSheet";
+import type { CalendarEvent, CalendarSettings, CalendarView, CustomFestival, CustomFestivalDraft, EventDraft } from "./types";
 
 export default function App() {
   const [activeDate, setActiveDate] = useState(today());
   const [view, setView] = useState<CalendarView>("month");
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [settings, setSettings] = useState<CalendarSettings>(DEFAULT_CALENDAR_SETTINGS);
+  const [customFestivals, setCustomFestivals] = useState<CustomFestival[]>([]);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const [draft, setDraft] = useState<EventDraft | null>(null);
   const [formError, setFormError] = useState("");
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
-    void refreshEvents();
+    void loadAppData();
   }, []);
+
+  async function loadAppData() {
+    const [storedSettings, storedEvents, storedFestivals] = await Promise.all([
+      getSettings(),
+      getAllEvents(),
+      getAllCustomFestivals()
+    ]);
+    setSettings(storedSettings);
+    setView(storedSettings.defaultView);
+    setEvents(storedEvents);
+    setCustomFestivals(storedFestivals);
+  }
 
   async function refreshEvents() {
     setEvents(await getAllEvents());
@@ -35,9 +62,17 @@ export default function App() {
     }, {});
   }, [events]);
 
+  const calendarMetaOptions = useMemo(
+    () => ({
+      festivalVisibility: settings.festivalVisibility,
+      customFestivals
+    }),
+    [settings.festivalVisibility, customFestivals]
+  );
+
   const selectedEvents = eventsByDate[activeDate] ?? [];
-  const selectedMeta = useMemo(() => getCalendarDayMeta(activeDate), [activeDate]);
-  const weekDays = useMemo(() => getWeekDays(activeDate), [activeDate]);
+  const selectedMeta = useMemo(() => getCalendarDayMeta(activeDate, calendarMetaOptions), [activeDate, calendarMetaOptions]);
+  const weekDays = useMemo(() => getWeekDays(activeDate, settings.weekStartsOn), [activeDate, settings.weekStartsOn]);
 
   const changePeriod = (direction: -1 | 1) => {
     const unit = view === "month" ? "month" : view === "week" ? "week" : "day";
@@ -46,7 +81,7 @@ export default function App() {
 
   const openCreate = (date = activeDate) => {
     setEditingEvent(null);
-    setDraft(emptyDraft(date));
+    setDraft(emptyDraft(date, settings));
     setFormError("");
   };
 
@@ -108,20 +143,57 @@ export default function App() {
     closeEditor();
   };
 
+  const updateSettings = async (nextSettings: CalendarSettings) => {
+    const previousSettings = settings;
+    setSettings(nextSettings);
+    try {
+      await saveSettings(nextSettings);
+    } catch (error) {
+      setSettings(previousSettings);
+      throw error;
+    }
+  };
+
+  const upsertCustomFestival = async (festivalDraft: CustomFestivalDraft, editingId?: string) => {
+    const existing = editingId ? customFestivals.find((festival) => festival.id === editingId) : null;
+    const now = new Date().toISOString();
+    const festival: CustomFestival = {
+      id: existing?.id ?? crypto.randomUUID(),
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+      ...festivalDraft
+    };
+
+    await saveCustomFestival(festival);
+    setCustomFestivals((current) =>
+      [...current.filter((item) => item.id !== festival.id), festival].sort(compareCustomFestivals)
+    );
+  };
+
+  const removeCustomFestival = async (id: string) => {
+    await deleteCustomFestival(id);
+    setCustomFestivals((current) => current.filter((festival) => festival.id !== id));
+  };
+
   return (
-    <main className="app-shell">
-      <section className="calendar-app" aria-label="轻日历">
+    <main className={`app-shell font-size-${settings.fontSize}`}>
+      <section className="calendar-app" aria-label="轻日历" inert={showSettings}>
         <header className="top-bar">
           <button className="icon-button" type="button" onClick={() => changePeriod(-1)} aria-label="上一段时间">
             <ChevronLeft size={22} />
           </button>
           <button className="title-button" type="button" onClick={() => setActiveDate(today())}>
             <span>{view === "day" ? formatDayTitle(activeDate) : formatMonthTitle(activeDate)}</span>
-            <small>{isToday(activeDate) ? "今天" : "点按回到今天"}</small>
+            <small>{isToday(activeDate) ? "今天" : "点击回到今天"}</small>
           </button>
-          <button className="icon-button" type="button" onClick={() => changePeriod(1)} aria-label="下一段时间">
-            <ChevronRight size={22} />
-          </button>
+          <div className="top-actions">
+            <button className="icon-button" type="button" onClick={() => changePeriod(1)} aria-label="下一段时间">
+              <ChevronRight size={22} />
+            </button>
+            <button className="icon-button" type="button" onClick={() => setShowSettings(true)} aria-label="打开设置">
+              <Settings size={21} />
+            </button>
+          </div>
         </header>
 
         <nav className="view-tabs" aria-label="日历视图">
@@ -140,6 +212,8 @@ export default function App() {
           <MonthView
             activeDate={activeDate}
             eventsByDate={eventsByDate}
+            settings={settings}
+            customFestivals={customFestivals}
             onSelect={setActiveDate}
             onCreate={openCreate}
           />
@@ -150,6 +224,8 @@ export default function App() {
             activeDate={activeDate}
             days={weekDays}
             eventsByDate={eventsByDate}
+            settings={settings}
+            customFestivals={customFestivals}
             onSelect={setActiveDate}
             onSwipe={(direction) => {
               if (direction === "left") changePeriod(1);
@@ -190,6 +266,17 @@ export default function App() {
           onDelete={removeEvent}
           onSubmit={submitDraft}
           onUpdate={updateDraft}
+        />
+      )}
+
+      {showSettings && (
+        <SettingsSheet
+          settings={settings}
+          customFestivals={customFestivals}
+          onClose={() => setShowSettings(false)}
+          onSettingsChange={updateSettings}
+          onSaveFestival={upsertCustomFestival}
+          onDeleteFestival={removeCustomFestival}
         />
       )}
     </main>
