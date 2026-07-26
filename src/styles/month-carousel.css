@@ -242,7 +242,7 @@
 
   .month-carousel-page .workday-marker {
     top: -2px;
-    right: -2px;
+    right: 0;
     min-width: 14px;
     height: 14px;
     font-size: calc(8px * var(--app-font-scale));

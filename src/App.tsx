@@ -171,7 +171,7 @@ export default function App() {
 
   return (
     <main className={`app-shell font-size-${settings.fontSize}`}>
-      <section className="calendar-app" aria-label="轻日历">
+      <section className="calendar-app" aria-label="轻日历" inert={showSettings}>
         <header className="top-bar">
           <button className="icon-button" type="button" onClick={() => changePeriod(-1)} aria-label="上一段时间">
             <ChevronLeft size={22} />

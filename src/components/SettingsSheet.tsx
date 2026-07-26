@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight, Plus, Trash2, X } from "lucide-react";
 import { isValidMonthDay } from "../dateUtils";
 import { EVENT_COLORS } from "../eventDefaults";
@@ -41,6 +41,8 @@ const WEEK_START_LABELS: Record<WeekStartsOn, string> = {
 };
 
 const DURATION_OPTIONS: CalendarSettings["defaultEventDurationMinutes"][] = [30, 60, 90, 120];
+const FOCUSABLE_SELECTOR =
+  'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [href], [tabindex]:not([tabindex="-1"])';
 
 const FESTIVAL_ROWS: Array<{ key: keyof FestivalVisibility; title: string; desc: string }> = [
   { key: "solar", title: "公历节日", desc: "元旦、劳动节、国庆节等" },
@@ -65,6 +67,12 @@ export function SettingsSheet({
   onSaveFestival,
   onDeleteFestival
 }: SettingsSheetProps) {
+  const pageRef = useRef<HTMLElement>(null);
+  const festivalEditorRef = useRef<HTMLElement>(null);
+  const pageOpenerRef = useRef<HTMLElement | null>(null);
+  const editorOpenerRef = useRef<HTMLElement | null>(null);
+  const editorWasOpenRef = useRef(false);
+  const previousScreenRef = useRef<SettingsScreen>("settings");
   const [screen, setScreen] = useState<SettingsScreen>("settings");
   const [editingFestival, setEditingFestival] = useState<CustomFestival | null>(null);
   const [festivalDraft, setFestivalDraft] = useState<CustomFestivalDraft | null>(null);
@@ -74,6 +82,72 @@ export function SettingsSheet({
     () => customFestivals.filter((festival) => festival.enabled).length,
     [customFestivals]
   );
+
+  useEffect(() => {
+    pageOpenerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const frame = window.requestAnimationFrame(() => focusFirstControl(pageRef.current));
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      pageOpenerRef.current?.focus();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (festivalDraft) {
+      editorOpenerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      editorWasOpenRef.current = true;
+      const frame = window.requestAnimationFrame(() => focusFirstControl(festivalEditorRef.current));
+      return () => window.cancelAnimationFrame(frame);
+    }
+
+    if (editorWasOpenRef.current) {
+      editorWasOpenRef.current = false;
+      const frame = window.requestAnimationFrame(() => editorOpenerRef.current?.focus());
+      return () => window.cancelAnimationFrame(frame);
+    }
+  }, [Boolean(festivalDraft)]);
+
+  useEffect(() => {
+    if (previousScreenRef.current === screen) return;
+    previousScreenRef.current = screen;
+    const frame = window.requestAnimationFrame(() => focusFirstControl(pageRef.current));
+    return () => window.cancelAnimationFrame(frame);
+  }, [screen]);
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      if (festivalDraft) {
+        closeFestivalEditor();
+      } else {
+        onClose();
+      }
+      return;
+    }
+
+    if (event.key !== "Tab") return;
+    const container = festivalDraft ? festivalEditorRef.current : pageRef.current;
+    if (!container) return;
+
+    const controls = getFocusableControls(container);
+    if (controls.length === 0) {
+      event.preventDefault();
+      container.focus();
+      return;
+    }
+
+    const activeElement = document.activeElement;
+    const firstControl = controls[0];
+    const lastControl = controls[controls.length - 1];
+    if (event.shiftKey && (activeElement === firstControl || !container.contains(activeElement))) {
+      event.preventDefault();
+      lastControl.focus();
+    } else if (!event.shiftKey && (activeElement === lastControl || !container.contains(activeElement))) {
+      event.preventDefault();
+      firstControl.focus();
+    }
+  };
 
   const updateSettings = (next: Partial<CalendarSettings>) => {
     onSettingsChange({ ...settings, ...next });
@@ -144,7 +218,15 @@ export function SettingsSheet({
   };
 
   return (
-    <section className="settings-page" role="dialog" aria-modal="true" aria-label={screen === "settings" ? "设置" : "节日管理"}>
+    <section
+      className="settings-page"
+      ref={pageRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label={screen === "settings" ? "设置" : "节日管理"}
+      tabIndex={-1}
+      onKeyDown={handleKeyDown}
+    >
       {screen === "settings" ? (
         <>
           <header className="settings-page-header">
@@ -293,7 +375,14 @@ export function SettingsSheet({
 
       {festivalDraft && (
         <div className="nested-sheet-backdrop" role="presentation">
-          <section className="festival-editor" role="dialog" aria-modal="true" aria-label={editingFestival ? "编辑节日" : "新增节日"}>
+          <section
+            className="festival-editor"
+            ref={festivalEditorRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={editingFestival ? "编辑节日" : "新增节日"}
+            tabIndex={-1}
+          >
             <header className="festival-editor-header">
               <button type="button" onClick={closeFestivalEditor}>取消</button>
               <strong>{editingFestival ? "编辑节日" : "新增节日"}</strong>
@@ -397,7 +486,7 @@ function ColorSettingRow({ title, value, onChange }: { title: string; value: str
             className={value === color ? "selected" : ""}
             key={color}
             type="button"
-            style={{ background: color }}
+            style={{ "--swatch-color": color } as CSSProperties}
             onClick={() => onChange(color)}
             aria-label={`选择默认颜色 ${color}`}
           />
@@ -432,4 +521,16 @@ function ToggleRow({
 function formatMonthDay(monthDay: string) {
   const [month, day] = monthDay.split("-");
   return `${Number(month)}月${Number(day)}日`;
+}
+
+function getFocusableControls(container: HTMLElement) {
+  return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
+    (control) => control.getClientRects().length > 0
+  );
+}
+
+function focusFirstControl(container: HTMLElement | null) {
+  if (!container) return;
+  const firstControl = getFocusableControls(container)[0];
+  (firstControl ?? container).focus();
 }

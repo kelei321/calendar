@@ -35,7 +35,7 @@
 }
 
 .text-button {
-  height: 36px;
+  min-height: 44px;
   border: 0;
   background: transparent;
   color: #ef3f3f;
@@ -130,8 +130,8 @@
 }
 
 .settings-segmented button {
-  min-width: 38px;
-  height: 28px;
+  min-width: 44px;
+  height: 44px;
   padding: 0 9px;
   border: 0;
   border-radius: 999px;
@@ -153,15 +153,32 @@
 }
 
 .settings-colors button {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.settings-colors button::before {
   width: 24px;
   height: 24px;
   border: 3px solid #fff;
   border-radius: 50%;
+  background: var(--swatch-color);
   box-shadow: 0 0 0 1px #dfe1e6;
+  content: "";
 }
 
-.settings-colors .selected {
+.settings-colors .selected::before {
   box-shadow: 0 0 0 3px #22252b;
+}
+
+.settings-toggle-row {
+  cursor: pointer;
 }
 
 .settings-toggle-row input {
@@ -188,7 +205,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  height: 30px;
+  min-height: 44px;
   border: 0;
   border-radius: 999px;
   background: #fff1f1;
@@ -269,10 +286,18 @@
 }
 
 .festival-editor-header button {
+  min-height: 44px;
   border: 0;
   background: transparent;
   color: #ef3f3f;
   font-weight: 700;
+}
+
+.settings-page button:focus-visible,
+.settings-page input:focus-visible,
+.settings-page textarea:focus-visible {
+  outline: 2px solid #ef3f3f;
+  outline-offset: 2px;
 }
 
 .festival-editor-header button:first-child {
@@ -283,19 +308,22 @@
   margin-top: 16px;
 }
 
-@media (max-width: 360px) {
-  .settings-page,
-  .festival-editor {
-    padding-right: 12px;
-    padding-left: 12px;
-  }
-
+@media (max-width: 420px) {
   .settings-control-row {
     grid-template-columns: 1fr;
     align-items: start;
   }
 
-  .settings-segmented {
+  .settings-segmented,
+  .settings-colors {
     justify-self: start;
+  }
+}
+
+@media (max-width: 360px) {
+  .settings-page,
+  .festival-editor {
+    padding-right: 12px;
+    padding-left: 12px;
   }
 }
