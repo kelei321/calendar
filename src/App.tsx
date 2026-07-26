@@ -148,7 +148,6 @@ export default function App() {
 
   const updateSettings = async (nextSettings: CalendarSettings) => {
     setSettings(nextSettings);
-    setView(nextSettings.defaultView);
     await saveSettings(nextSettings);
     setSettings(await getSettings());
   };

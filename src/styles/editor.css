@@ -45,7 +45,7 @@
 .field span,
 .toggle-field span {
   color: #898d95;
-  font-size: 13px;
+  font-size: calc(13px * var(--app-font-scale));
 }
 
 .field input,
@@ -106,7 +106,7 @@
 .form-error {
   margin: 10px 0 0;
   color: #e03131;
-  font-size: 13px;
+  font-size: calc(13px * var(--app-font-scale));
 }
 
 .delete-button {
@@ -129,7 +129,7 @@
   gap: 6px;
   margin-top: 14px;
   color: #9a9da3;
-  font-size: 12px;
+  font-size: calc(12px * var(--app-font-scale));
 }
 
 @media (max-width: 360px) {
@@ -139,7 +139,7 @@
   }
 
   .title-button span {
-    font-size: 19px;
+    font-size: calc(19px * var(--app-font-scale));
   }
 
   .day-cell {

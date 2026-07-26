@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import dayjs from "dayjs";
 import {
   DATE_FORMAT,
-  getIsoWeekNumber,
+  getCalendarWeekNumber,
   getMonthGrid,
   getWeekDayLabels,
   isSameMonth,
@@ -175,11 +175,12 @@ export function MonthView({ activeDate, eventsByDate, settings, customFestivals,
                 <div className={["month-grid", settings.showWeekNumbers ? "with-week-numbers" : ""].join(" ")}>
                   {Array.from({ length: 6 }, (_, weekIndex) => {
                     const weekDays = days.slice(weekIndex * 7, weekIndex * 7 + 7);
+                    const weekNumber = getCalendarWeekNumber(weekDays[0], settings.weekStartsOn);
                     return (
                       <div className={["month-week-row", settings.showWeekNumbers ? "with-week-numbers" : ""].join(" ")} key={`${anchor}-${weekIndex}`}>
                         {settings.showWeekNumbers && (
-                          <span className="week-number" aria-label={`第 ${getIsoWeekNumber(weekDays[0])} 周`}>
-                            {getIsoWeekNumber(weekDays[0])}
+                          <span className="week-number" aria-label={`第 ${weekNumber} 周`}>
+                            {weekNumber}
                           </span>
                         )}
                         {weekDays.map((date) => {

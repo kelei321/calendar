@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight, Plus, Trash2, X } from "lucide-react";
+import { isValidMonthDay } from "../dateUtils";
 import { EVENT_COLORS } from "../eventDefaults";
 import type {
   CalendarFontSize,
@@ -120,7 +121,7 @@ export function SettingsSheet({
       setError("请输入节日名称");
       return;
     }
-    if (!/^\d{2}-\d{2}$/.test(festivalDraft.monthDay)) {
+    if (!isValidMonthDay(festivalDraft.monthDay)) {
       setError("请选择节日日期");
       return;
     }
@@ -308,7 +309,7 @@ export function SettingsSheet({
               <span>日期</span>
               <input
                 type="date"
-                value={`2026-${festivalDraft.monthDay}`}
+                value={`2024-${festivalDraft.monthDay}`}
                 onChange={(event) => updateFestivalDraft("monthDay", event.target.value.slice(5))}
               />
             </label>

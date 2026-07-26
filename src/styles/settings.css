@@ -22,7 +22,7 @@
 
 .settings-page-header strong {
   overflow: hidden;
-  font-size: 21px;
+  font-size: calc(21px * var(--app-font-scale));
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -56,7 +56,7 @@
 .settings-section-title h2 {
   margin: 4px 16px 8px;
   color: #8b8f97;
-  font-size: 13px;
+  font-size: calc(13px * var(--app-font-scale));
   font-weight: 700;
 }
 
@@ -105,7 +105,7 @@
 .settings-static-row strong,
 .custom-festival-row strong {
   display: block;
-  font-size: 15px;
+  font-size: calc(15px * var(--app-font-scale));
   line-height: 1.35;
 }
 
@@ -117,7 +117,7 @@
   display: block;
   margin-top: 3px;
   color: #969aa2;
-  font-size: 12px;
+  font-size: calc(12px * var(--app-font-scale));
   line-height: 1.35;
 }
 
@@ -137,7 +137,7 @@
   border-radius: 999px;
   background: transparent;
   color: #777b82;
-  font-size: 12px;
+  font-size: calc(12px * var(--app-font-scale));
   font-weight: 700;
 }
 
@@ -173,7 +173,7 @@
 .settings-footnote {
   margin: 14px 4px 2px;
   color: #a1a4aa;
-  font-size: 12px;
+  font-size: calc(12px * var(--app-font-scale));
   text-align: center;
 }
 
@@ -193,7 +193,7 @@
   border-radius: 999px;
   background: #fff1f1;
   color: #ef3f3f;
-  font-size: 12px;
+  font-size: calc(12px * var(--app-font-scale));
   font-weight: 700;
 }
 
@@ -217,7 +217,7 @@
   border-radius: 999px;
   background: #eef1f6;
   color: #7a7f88;
-  font-size: 12px;
+  font-size: calc(12px * var(--app-font-scale));
   font-weight: 700;
 }
 
@@ -237,7 +237,7 @@
 
 .festival-empty p {
   margin: 0;
-  font-size: 13px;
+  font-size: calc(13px * var(--app-font-scale));
 }
 
 .nested-sheet-backdrop {

@@ -219,7 +219,7 @@
 .month-carousel-page .day-lunar {
   height: 13px;
   min-height: 13px;
-  font-size: 9px;
+  font-size: calc(9px * var(--app-font-scale));
   line-height: 13px;
 }
 
@@ -230,14 +230,14 @@
   height: 15px;
   padding: 0 3px;
   border-radius: 50%;
-  font-size: 9px;
+  font-size: calc(9px * var(--app-font-scale));
   line-height: 15px;
 }
 
 @media (max-width: 360px) {
   .month-carousel-page .rotating-day-text,
   .month-carousel-page .day-lunar {
-    font-size: 8.5px;
+    font-size: calc(8.5px * var(--app-font-scale));
   }
 
   .month-carousel-page .workday-marker {
@@ -245,7 +245,7 @@
     right: -2px;
     min-width: 14px;
     height: 14px;
-    font-size: 8px;
+    font-size: calc(8px * var(--app-font-scale));
     line-height: 14px;
   }
 }

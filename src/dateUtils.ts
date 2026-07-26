@@ -53,6 +53,17 @@ export function getIsoWeekNumber(date: Dayjs | string) {
   return thursday.diff(weekOneStart, "week") + 1;
 }
 
+export function getCalendarWeekNumber(weekStart: Dayjs | string, weekStartsOn: WeekStartsOn) {
+  const isoWeekDate = weekStartsOn === 0 ? dayjs(weekStart).add(1, "day") : dayjs(weekStart);
+  return getIsoWeekNumber(isoWeekDate);
+}
+
+export function isValidMonthDay(monthDay: string) {
+  if (!/^\d{2}-\d{2}$/.test(monthDay)) return false;
+  const candidate = dayjs(`2024-${monthDay}`);
+  return candidate.isValid() && candidate.format("MM-DD") === monthDay;
+}
+
 export function formatMonthTitle(anchor: string) {
   return dayjs(anchor).format("YYYY年M月");
 }

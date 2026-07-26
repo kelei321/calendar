@@ -29,7 +29,7 @@
   min-height: 16px;
   overflow: hidden;
   color: #9da1a8;
-  font-size: 10px;
+  font-size: calc(10px * var(--app-font-scale));
   line-height: 16px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -74,7 +74,7 @@
 .swipe-tip {
   margin: 10px 0 0;
   color: #b0b3ba;
-  font-size: 11px;
+  font-size: calc(11px * var(--app-font-scale));
   text-align: center;
 }
 
@@ -89,7 +89,7 @@
   display: block;
   width: 100%;
   overflow: hidden;
-  font-size: 10px;
+  font-size: calc(10px * var(--app-font-scale));
   font-style: normal;
   line-height: 14px;
   text-overflow: ellipsis;
@@ -134,7 +134,7 @@
   border-radius: 999px;
   background: #fff1f1;
   color: #ef3f3f;
-  font-size: 12px;
+  font-size: calc(12px * var(--app-font-scale));
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -178,7 +178,7 @@
   .day-lunar,
   .week-day em,
   .week-day b {
-    font-size: 9px;
+    font-size: calc(9px * var(--app-font-scale));
   }
 
   .week-day {
@@ -196,7 +196,7 @@
   padding: 0 4px;
   border-radius: 6px;
   color: #fff;
-  font-size: 10px;
+  font-size: calc(10px * var(--app-font-scale));
   font-weight: 800;
   line-height: 17px;
   text-align: center;
@@ -222,7 +222,7 @@
   height: 16px;
   overflow: hidden;
   color: #9da1a8;
-  font-size: 10px;
+  font-size: calc(10px * var(--app-font-scale));
   line-height: 16px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -231,7 +231,7 @@
 .rotating-day-text.compact,
 .week-lunar {
   height: 14px;
-  font-size: 10px;
+  font-size: calc(10px * var(--app-font-scale));
   line-height: 14px;
 }
 
@@ -329,14 +329,14 @@
     height: 15px;
     padding: 0 3px;
     border-radius: 5px;
-    font-size: 9px;
+    font-size: calc(9px * var(--app-font-scale));
     line-height: 15px;
   }
 
   .rotating-day-text,
   .week-lunar,
   .rotating-day-text-track span {
-    font-size: 9px;
+    font-size: calc(9px * var(--app-font-scale));
   }
 }
 
