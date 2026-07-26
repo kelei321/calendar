@@ -18,9 +18,9 @@ interface SettingsSheetProps {
   settings: CalendarSettings;
   customFestivals: CustomFestival[];
   onClose: () => void;
-  onSettingsChange: (settings: CalendarSettings) => void;
-  onSaveFestival: (draft: CustomFestivalDraft, editingId?: string) => void;
-  onDeleteFestival: (id: string) => void;
+  onSettingsChange: (settings: CalendarSettings) => Promise<void>;
+  onSaveFestival: (draft: CustomFestivalDraft, editingId?: string) => Promise<void>;
+  onDeleteFestival: (id: string) => Promise<void>;
 }
 
 const VIEW_LABELS: Record<CalendarView, string> = {
@@ -73,10 +73,15 @@ export function SettingsSheet({
   const editorOpenerRef = useRef<HTMLElement | null>(null);
   const editorWasOpenRef = useRef(false);
   const previousScreenRef = useRef<SettingsScreen>("settings");
+  const settingsSaveInFlightRef = useRef(false);
+  const festivalSaveInFlightRef = useRef(false);
   const [screen, setScreen] = useState<SettingsScreen>("settings");
   const [editingFestival, setEditingFestival] = useState<CustomFestival | null>(null);
   const [festivalDraft, setFestivalDraft] = useState<CustomFestivalDraft | null>(null);
   const [error, setError] = useState("");
+  const [settingsError, setSettingsError] = useState("");
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [isSavingFestival, setIsSavingFestival] = useState(false);
 
   const enabledFestivalCount = useMemo(
     () => customFestivals.filter((festival) => festival.enabled).length,
@@ -119,9 +124,9 @@ export function SettingsSheet({
     if (event.key === "Escape") {
       event.preventDefault();
       if (festivalDraft) {
-        closeFestivalEditor();
+        if (!isSavingFestival) closeFestivalEditor();
       } else {
-        onClose();
+        if (!isSavingSettings) onClose();
       }
       return;
     }
@@ -149,12 +154,23 @@ export function SettingsSheet({
     }
   };
 
-  const updateSettings = (next: Partial<CalendarSettings>) => {
-    onSettingsChange({ ...settings, ...next });
+  const updateSettings = async (next: Partial<CalendarSettings>) => {
+    if (settingsSaveInFlightRef.current) return;
+    settingsSaveInFlightRef.current = true;
+    setSettingsError("");
+    setIsSavingSettings(true);
+    try {
+      await onSettingsChange({ ...settings, ...next });
+    } catch {
+      setSettingsError("设置保存失败，请重试");
+    } finally {
+      settingsSaveInFlightRef.current = false;
+      setIsSavingSettings(false);
+    }
   };
 
-  const updateVisibility = (key: keyof FestivalVisibility, value: boolean) => {
-    updateSettings({
+  const updateVisibility = async (key: keyof FestivalVisibility, value: boolean) => {
+    await updateSettings({
       festivalVisibility: {
         ...settings.festivalVisibility,
         [key]: value
@@ -189,8 +205,8 @@ export function SettingsSheet({
     setFestivalDraft((current) => (current ? { ...current, [key]: value } : current));
   };
 
-  const submitFestival = () => {
-    if (!festivalDraft) return;
+  const submitFestival = async () => {
+    if (!festivalDraft || festivalSaveInFlightRef.current) return;
     if (!festivalDraft.name.trim()) {
       setError("请输入节日名称");
       return;
@@ -200,21 +216,41 @@ export function SettingsSheet({
       return;
     }
 
-    onSaveFestival(
-      {
-        ...festivalDraft,
-        name: festivalDraft.name.trim()
-      },
-      editingFestival?.id
-    );
-    closeFestivalEditor();
+    setError("");
+    festivalSaveInFlightRef.current = true;
+    setIsSavingFestival(true);
+    try {
+      await onSaveFestival(
+        {
+          ...festivalDraft,
+          name: festivalDraft.name.trim()
+        },
+        editingFestival?.id
+      );
+      closeFestivalEditor();
+    } catch {
+      setError("节日保存失败，请重试");
+    } finally {
+      festivalSaveInFlightRef.current = false;
+      setIsSavingFestival(false);
+    }
   };
 
-  const removeFestival = () => {
-    if (!editingFestival) return;
+  const removeFestival = async () => {
+    if (!editingFestival || festivalSaveInFlightRef.current) return;
     if (!window.confirm(`删除“${editingFestival.name}”？`)) return;
-    onDeleteFestival(editingFestival.id);
-    closeFestivalEditor();
+    setError("");
+    festivalSaveInFlightRef.current = true;
+    setIsSavingFestival(true);
+    try {
+      await onDeleteFestival(editingFestival.id);
+      closeFestivalEditor();
+    } catch {
+      setError("节日删除失败，请重试");
+    } finally {
+      festivalSaveInFlightRef.current = false;
+      setIsSavingFestival(false);
+    }
   };
 
   return (
@@ -224,13 +260,14 @@ export function SettingsSheet({
       role="dialog"
       aria-modal="true"
       aria-label={screen === "settings" ? "设置" : "节日管理"}
+      aria-busy={isSavingSettings}
       tabIndex={-1}
       onKeyDown={handleKeyDown}
     >
       {screen === "settings" ? (
         <>
           <header className="settings-page-header">
-            <button className="icon-button" type="button" onClick={onClose} aria-label="关闭设置">
+            <button className="icon-button" type="button" onClick={onClose} disabled={isSavingSettings} aria-label="关闭设置">
               <X size={20} />
             </button>
             <strong>设置</strong>
@@ -238,6 +275,7 @@ export function SettingsSheet({
           </header>
 
           <div className="settings-page-body">
+            {settingsError && <p className="settings-save-error" role="alert">{settingsError}</p>}
             <section className="settings-group" aria-label="日历显示">
               <h2>日历显示</h2>
               <SegmentedRow
@@ -249,7 +287,8 @@ export function SettingsSheet({
                   ["week", "周"],
                   ["day", "日"]
                 ]}
-                onChange={(value) => updateSettings({ defaultView: value })}
+                disabled={isSavingSettings}
+                onChange={(value) => void updateSettings({ defaultView: value })}
               />
               <SegmentedRow
                 title="一周开始日"
@@ -259,13 +298,15 @@ export function SettingsSheet({
                   [1, "周一"],
                   [0, "周日"]
                 ]}
-                onChange={(value) => updateSettings({ weekStartsOn: value })}
+                disabled={isSavingSettings}
+                onChange={(value) => void updateSettings({ weekStartsOn: value })}
               />
               <ToggleRow
                 title="显示周数"
                 desc="在月视图左侧显示 ISO 周数"
                 checked={settings.showWeekNumbers}
-                onChange={(checked) => updateSettings({ showWeekNumbers: checked })}
+                disabled={isSavingSettings}
+                onChange={(checked) => void updateSettings({ showWeekNumbers: checked })}
               />
               <SegmentedRow
                 title="字体大小"
@@ -276,7 +317,8 @@ export function SettingsSheet({
                   ["standard", "标准"],
                   ["large", "大"]
                 ]}
-                onChange={(value) => updateSettings({ fontSize: value })}
+                disabled={isSavingSettings}
+                onChange={(value) => void updateSettings({ fontSize: value })}
               />
             </section>
 
@@ -287,12 +329,14 @@ export function SettingsSheet({
                 desc={`${settings.defaultEventDurationMinutes}分钟`}
                 value={settings.defaultEventDurationMinutes}
                 options={DURATION_OPTIONS.map((duration) => [duration, `${duration}分钟`] as const)}
-                onChange={(value) => updateSettings({ defaultEventDurationMinutes: value })}
+                disabled={isSavingSettings}
+                onChange={(value) => void updateSettings({ defaultEventDurationMinutes: value })}
               />
               <ColorSettingRow
                 title="默认颜色"
                 value={settings.defaultEventColor}
-                onChange={(value) => updateSettings({ defaultEventColor: value })}
+                disabled={isSavingSettings}
+                onChange={(value) => void updateSettings({ defaultEventColor: value })}
               />
             </section>
 
@@ -308,12 +352,6 @@ export function SettingsSheet({
                 </span>
                 <ChevronRight size={18} />
               </button>
-              <div className="settings-static-row">
-                <span>
-                  <strong>数据管理</strong>
-                  <small>导入 / 导出稍后接入</small>
-                </span>
-              </div>
             </section>
 
             <p className="settings-footnote">本地保存，离线可用</p>
@@ -322,7 +360,7 @@ export function SettingsSheet({
       ) : (
         <>
           <header className="settings-page-header">
-            <button className="icon-button" type="button" onClick={() => setScreen("settings")} aria-label="返回设置">
+            <button className="icon-button" type="button" onClick={() => setScreen("settings")} disabled={isSavingSettings} aria-label="返回设置">
               <ChevronLeft size={21} />
             </button>
             <strong>节日管理</strong>
@@ -330,6 +368,7 @@ export function SettingsSheet({
           </header>
 
           <div className="settings-page-body">
+            {settingsError && <p className="settings-save-error" role="alert">{settingsError}</p>}
             <section className="settings-group" aria-label="内置节日">
               <h2>内置节日</h2>
               {FESTIVAL_ROWS.map((row) => (
@@ -338,7 +377,8 @@ export function SettingsSheet({
                   title={row.title}
                   desc={row.desc}
                   checked={settings.festivalVisibility[row.key]}
-                  onChange={(checked) => updateVisibility(row.key, checked)}
+                  disabled={isSavingSettings}
+                  onChange={(checked) => void updateVisibility(row.key, checked)}
                 />
               ))}
             </section>
@@ -381,23 +421,27 @@ export function SettingsSheet({
             role="dialog"
             aria-modal="true"
             aria-label={editingFestival ? "编辑节日" : "新增节日"}
+            aria-busy={isSavingFestival}
             tabIndex={-1}
           >
             <header className="festival-editor-header">
-              <button type="button" onClick={closeFestivalEditor}>取消</button>
+              <button type="button" onClick={closeFestivalEditor} disabled={isSavingFestival}>取消</button>
               <strong>{editingFestival ? "编辑节日" : "新增节日"}</strong>
-              <button type="button" onClick={submitFestival}>完成</button>
+              <button type="button" onClick={() => void submitFestival()} disabled={isSavingFestival}>
+                {isSavingFestival ? "保存中" : "完成"}
+              </button>
             </header>
 
             <label className="field">
               <span>节日名称</span>
-              <input value={festivalDraft.name} onChange={(event) => updateFestivalDraft("name", event.target.value)} placeholder="例如：家人生日" />
+              <input disabled={isSavingFestival} value={festivalDraft.name} onChange={(event) => updateFestivalDraft("name", event.target.value)} placeholder="例如：家人生日" />
             </label>
 
             <label className="field">
               <span>日期</span>
               <input
                 type="date"
+                disabled={isSavingFestival}
                 value={`2024-${festivalDraft.monthDay}`}
                 onChange={(event) => updateFestivalDraft("monthDay", event.target.value.slice(5))}
               />
@@ -409,6 +453,7 @@ export function SettingsSheet({
                   className={festivalDraft.color === color ? "selected" : ""}
                   key={color}
                   type="button"
+                  disabled={isSavingFestival}
                   style={{ background: color }}
                   onClick={() => updateFestivalDraft("color", color)}
                   aria-label={`选择颜色 ${color}`}
@@ -420,6 +465,7 @@ export function SettingsSheet({
               title="启用"
               desc="关闭后该节日不会显示在日历中"
               checked={festivalDraft.enabled}
+              disabled={isSavingFestival}
               onChange={(checked) => updateFestivalDraft("enabled", checked)}
             />
 
@@ -431,7 +477,7 @@ export function SettingsSheet({
             {error && <p className="form-error">{error}</p>}
 
             {editingFestival && (
-              <button className="delete-button" type="button" onClick={removeFestival}>
+              <button className="delete-button" type="button" onClick={() => void removeFestival()} disabled={isSavingFestival}>
                 <Trash2 size={17} />
                 删除节日
               </button>
@@ -448,12 +494,14 @@ function SegmentedRow<T extends string | number>({
   desc,
   value,
   options,
+  disabled = false,
   onChange
 }: {
   title: string;
   desc: string;
   value: T;
   options: readonly (readonly [T, string])[];
+  disabled?: boolean;
   onChange: (value: T) => void;
 }) {
   return (
@@ -464,7 +512,7 @@ function SegmentedRow<T extends string | number>({
       </span>
       <div className="settings-segmented">
         {options.map(([optionValue, label]) => (
-          <button className={value === optionValue ? "active" : ""} key={String(optionValue)} type="button" onClick={() => onChange(optionValue)}>
+          <button className={value === optionValue ? "active" : ""} key={String(optionValue)} type="button" disabled={disabled} onClick={() => onChange(optionValue)}>
             {label}
           </button>
         ))}
@@ -473,7 +521,7 @@ function SegmentedRow<T extends string | number>({
   );
 }
 
-function ColorSettingRow({ title, value, onChange }: { title: string; value: string; onChange: (value: string) => void }) {
+function ColorSettingRow({ title, value, disabled = false, onChange }: { title: string; value: string; disabled?: boolean; onChange: (value: string) => void }) {
   return (
     <div className="settings-control-row">
       <span>
@@ -486,6 +534,7 @@ function ColorSettingRow({ title, value, onChange }: { title: string; value: str
             className={value === color ? "selected" : ""}
             key={color}
             type="button"
+            disabled={disabled}
             style={{ "--swatch-color": color } as CSSProperties}
             onClick={() => onChange(color)}
             aria-label={`选择默认颜色 ${color}`}
@@ -500,11 +549,13 @@ function ToggleRow({
   title,
   desc,
   checked,
+  disabled = false,
   onChange
 }: {
   title: string;
   desc: string;
   checked: boolean;
+  disabled?: boolean;
   onChange: (checked: boolean) => void;
 }) {
   return (
@@ -513,7 +564,7 @@ function ToggleRow({
         <strong>{title}</strong>
         <small>{desc}</small>
       </span>
-      <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} />
+      <input type="checkbox" checked={checked} disabled={disabled} onChange={(event) => onChange(event.target.checked)} />
     </label>
   );
 }

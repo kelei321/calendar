@@ -147,9 +147,14 @@ export default function App() {
   };
 
   const updateSettings = async (nextSettings: CalendarSettings) => {
+    const previousSettings = settings;
     setSettings(nextSettings);
-    await saveSettings(nextSettings);
-    setSettings(await getSettings());
+    try {
+      await saveSettings(nextSettings);
+    } catch (error) {
+      setSettings(previousSettings);
+      throw error;
+    }
   };
 
   const upsertCustomFestival = async (festivalDraft: CustomFestivalDraft, editingId?: string) => {
@@ -268,9 +273,9 @@ export default function App() {
           settings={settings}
           customFestivals={customFestivals}
           onClose={() => setShowSettings(false)}
-          onSettingsChange={(nextSettings) => void updateSettings(nextSettings)}
-          onSaveFestival={(festivalDraft, editingId) => void upsertCustomFestival(festivalDraft, editingId)}
-          onDeleteFestival={(id) => void removeCustomFestival(id)}
+          onSettingsChange={updateSettings}
+          onSaveFestival={upsertCustomFestival}
+          onDeleteFestival={removeCustomFestival}
         />
       )}
     </main>

@@ -27,6 +27,7 @@ export function normalizeSettings(settings?: CalendarSettingsInput): CalendarSet
   const defaultView = settings?.defaultView;
   const defaultDuration = settings?.defaultEventDurationMinutes;
   const fontSize = settings?.fontSize;
+  const festivalVisibility = settings?.festivalVisibility;
 
   return {
     ...DEFAULT_CALENDAR_SETTINGS,
@@ -39,8 +40,11 @@ export function normalizeSettings(settings?: CalendarSettingsInput): CalendarSet
       ? defaultDuration ?? DEFAULT_CALENDAR_SETTINGS.defaultEventDurationMinutes
       : DEFAULT_CALENDAR_SETTINGS.defaultEventDurationMinutes,
     festivalVisibility: {
-      ...DEFAULT_CALENDAR_SETTINGS.festivalVisibility,
-      ...settings?.festivalVisibility
+      solar: normalizeBoolean(festivalVisibility?.solar, DEFAULT_CALENDAR_SETTINGS.festivalVisibility.solar),
+      lunar: normalizeBoolean(festivalVisibility?.lunar, DEFAULT_CALENDAR_SETTINGS.festivalVisibility.lunar),
+      term: normalizeBoolean(festivalVisibility?.term, DEFAULT_CALENDAR_SETTINGS.festivalVisibility.term),
+      memorial: normalizeBoolean(festivalVisibility?.memorial, DEFAULT_CALENDAR_SETTINGS.festivalVisibility.memorial),
+      workday: normalizeBoolean(festivalVisibility?.workday, DEFAULT_CALENDAR_SETTINGS.festivalVisibility.workday)
     },
     defaultEventColor: EVENT_COLORS.includes(settings?.defaultEventColor ?? "")
       ? settings?.defaultEventColor ?? DEFAULT_CALENDAR_SETTINGS.defaultEventColor
@@ -54,4 +58,8 @@ export function normalizeSettings(settings?: CalendarSettingsInput): CalendarSet
       ? fontSize ?? DEFAULT_CALENDAR_SETTINGS.fontSize
       : DEFAULT_CALENDAR_SETTINGS.fontSize
   };
+}
+
+function normalizeBoolean(value: unknown, fallback: boolean) {
+  return typeof value === "boolean" ? value : fallback;
 }

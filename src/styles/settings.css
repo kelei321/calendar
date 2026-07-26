@@ -63,7 +63,6 @@
 .settings-control-row,
 .settings-toggle-row,
 .settings-nav-row,
-.settings-static-row,
 .custom-festival-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -102,7 +101,6 @@
 .settings-control-row strong,
 .settings-toggle-row strong,
 .settings-nav-row strong,
-.settings-static-row strong,
 .custom-festival-row strong {
   display: block;
   font-size: calc(15px * var(--app-font-scale));
@@ -112,7 +110,6 @@
 .settings-control-row small,
 .settings-toggle-row small,
 .settings-nav-row small,
-.settings-static-row small,
 .custom-festival-row small {
   display: block;
   margin-top: 3px;
@@ -192,6 +189,15 @@
   color: #a1a4aa;
   font-size: calc(12px * var(--app-font-scale));
   text-align: center;
+}
+
+.settings-save-error {
+  margin: 12px 4px 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fff1f1;
+  color: #c92a2a;
+  font-size: calc(13px * var(--app-font-scale));
 }
 
 .settings-section-title {
